@@ -1,5 +1,6 @@
 import streamlit as st
 from fpdf import FPDF
+import os
 
 # ========================
 # 1. Questions in Multiple Languages
@@ -108,31 +109,37 @@ if st.button("Submit"):
     st.info(f"Result: {result}")
 
     # ========================
-    # 4. Generate PDF
+    # 4. Generate PDF (fpdf2 with Unicode support)
     # ========================
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
 
-    pdf.cell(200, 10, txt="Intellectual Disability Screening Report", ln=True, align="C")
-    pdf.cell(200, 10, txt=f"Language: {language}", ln=True, align="L")
-    pdf.ln(5)
+    # Make sure this path exists or use your own TTF path
+    font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+    if not os.path.exists(font_path):
+        st.error(f"Font not found at {font_path}. Upload a TTF font and update the path.")
+    else:
+        pdf.add_font("DejaVu", "", font_path, uni=True)
+        pdf.set_font("DejaVu", size=12)
 
-    for idx, (q, ans, sc) in enumerate(responses, 1):
-        pdf.multi_cell(0, 10, f"{idx}. {q}\nAnswer: {ans}\n")
-    
-    pdf.ln(5)
-    pdf.cell(200, 10, txt=f"Total Score: {total_score} / {len(responses)*2}", ln=True)
-    pdf.multi_cell(0, 10, f"Result: {result}")
+        pdf.cell(200, 10, txt="Intellectual Disability Screening Report", ln=True, align="C")
+        pdf.cell(200, 10, txt=f"Language: {language}", ln=True, align="L")
+        pdf.ln(5)
 
-    # Save PDF to memory
-    pdf_output = "screening_report.pdf"
-    pdf.output(pdf_output)
+        for idx, (q, ans, sc) in enumerate(responses, 1):
+            pdf.multi_cell(0, 10, f"{idx}. {q}\nAnswer: {ans}\n")
 
-    with open(pdf_output, "rb") as file:
-        st.download_button(
-            label="📥 Download Report (PDF)",
-            data=file,
-            file_name=pdf_output,
-            mime="application/pdf"
-        )
+        pdf.ln(5)
+        pdf.cell(200, 10, txt=f"Total Score: {total_score} / {len(responses)*2}", ln=True)
+        pdf.multi_cell(0, 10, f"Result: {result}")
+
+        pdf_output = "screening_report.pdf"
+        pdf.output(pdf_output)
+
+        with open(pdf_output, "rb") as file:
+            st.download_button(
+                label="📥 Download Report (PDF)",
+                data=file,
+                file_name=pdf_output,
+                mime="application/pdf"
+            )
