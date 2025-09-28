@@ -125,8 +125,14 @@ if st.button("Submit"):
     pdf.cell(200, 10, txt=f"Total Score: {total_score} / {len(responses)*2}", ln=True)
     pdf.multi_cell(0, 10, f"Result: {result}")
 
+    # Save PDF to memory
     pdf_output = "screening_report.pdf"
     pdf.output(pdf_output)
 
     with open(pdf_output, "rb") as file:
-        st.download_button("📥 Download Report (PDF)", file, file_name=pdf_output, mime="application/pdf")
+        st.download_button(
+            label="📥 Download Report (PDF)",
+            data=file,
+            file_name=pdf_output,
+            mime="application/pdf"
+        )
